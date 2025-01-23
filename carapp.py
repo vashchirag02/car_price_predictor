@@ -1,5 +1,12 @@
 from flask import Flask, render_template ,request
 import pandas as pd
+import pickle
+import logging
+logging.basicConfig(level=logging.INFO)
+
+
+model = pickle.load(open("LinearRrgressionModel.pkl", 'rb'))
+
 
 app = Flask(__name__)
 car = pd.read_csv("cleaned_car.csv")
@@ -23,14 +30,19 @@ def home():
 
 @app.route('/predict',methods=['POST'])
 def predict():
-    company= request.form.get('company')
-    car_model= request.form.get('car_model')
-    year= int(request.form.get('year'))
-    fuel_type= request.form.get('fuel_type')
-    kms_driven= int(request.form.get('kilo_driven'))
-    print(company)
+    try:
+     company= request.form.get('company')
+     car_model= request.form.get('car_model')
+     year= int(request.form.get('year'))
+     fuel_type= request.form.get('fuel_type')
+     kms_driven= int(request.form.get('kilo_driven'))
+     print(company)
+     prediction = model.predict(pd.DataFrame([[car_model, company,year,kms_driven,fuel_type]], columns=['name', 'company', 'year', 'kms_driven', 'fuel_type']))
 
-    return""
+     print(prediction)
+     return str(prediction[0])  # Returning the predicted value as a string
+    except Exception as e:
+        return f"Error: (e)",400
 
 
 if __name__ == "__main__":
